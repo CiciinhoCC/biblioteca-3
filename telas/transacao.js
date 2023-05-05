@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, ImageBackground, Image} from 'react-native';
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
+import db from "../config";
+
 
 const bg = require('../assets/background2.png');
 const logo = require('../assets/appIcon.png');
@@ -48,6 +50,25 @@ class Transacao extends React.Component {
         }
     }
 
+    initiateBookIssue = async() => {
+        console.log("entregue 👍")
+    }
+    initiateBookReturn = async() => {
+        console.log("devolvido 😁")
+    }
+
+    handleTransaction = async() => {
+        var {bookId} = this.state;
+        db.collection('books').doc(bookId).get().then((doc) => {
+            if(doc.data().available){
+                this.initiateBookIssue()
+            }
+            else{
+                this.initiateBookReturn()
+            }
+        })
+    }
+
     render(){
 
         const {appState,permissao,scanned,dado} = this.state;
@@ -85,13 +106,11 @@ class Transacao extends React.Component {
                             }}>
                                 <Text>Digitalizar</Text>
                             </TouchableOpacity>
-                        </View>
+                        </View>  
                     </View>
-                    <TouchableOpacity onPress = {() => {
-                        this.getCameraPermissions()
-                    }}>
-                        <Text>
-                            Digitalizar QR Code 
+                    <TouchableOpacity style = {styles.enviar} onPress = {this.handleTransaction}>
+                        <Text style = {styles.enviarText}>
+                            Enviar 
                         </Text>
 
 
@@ -163,7 +182,22 @@ const styles = StyleSheet.create({
       fontSize: 20,
       color: "#0A0101",
       fontFamily: "Rajdhani_600SemiBold"
-    }
+    },
+    enviar: {
+        width: '43%',
+        height: 55,
+        justifyContent: "center",
+        alignItems: 'center',
+        borderRadius: 15,
+        backgroundColor: "#f48d20",
+        marginTop: 15
+    },
+    enviarText: {
+      fontSize: 20,
+      color: "#fff",
+      fontFamily: "Rajdhani_600SemiBold"
+    },
+
    });   
 
 export default Transacao
