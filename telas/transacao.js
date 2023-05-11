@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ImageBackground, Image} from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, Image, KeyboardAvoidingView, Alert, ToastAndroid} from 'react-native';
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
@@ -21,6 +21,8 @@ class Transacao extends React.Component {
             scanned: false,
             bookId: '',
             studentId: '',
+            bookName: '',
+            studentName: '',
         }
     }
 
@@ -50,24 +52,87 @@ class Transacao extends React.Component {
         }
     }
 
-    initiateBookIssue = async() => {
-        console.log("entregue 👍")
+    initiateBookIssue = async(bookName,studentName,bookId,studentId) => {
+        db.collection('transactions').add({
+            book_id: bookId,
+            book_name: bookName,
+            date: firebase.firestore.TimeStamp.now().toDate,
+            student_id: studentId,
+            student_name: studentName,
+            transaction_type: "issue"
+        });
+        db.collection('books').doc(bookId).update({
+            available: false,
+        });
+        db.collection('students').doc(studentId).update({
+            books_issued: firebase.firestore.FieldValue.increment(1)
+        });
+        this.setState({
+            bookId: '',
+            studentId: '',
+        })
     }
-    initiateBookReturn = async() => {
-        console.log("devolvido 😁")
+    initiateBookReturn = async(bookName,studentName,bookId,studentId) => {
+        db.collection('transactions').add({
+            book_id: bookId,
+            book_name: bookName,
+            date: firebase.firestore.TimeStamp.now().toDate,
+            student_id: studentId,
+            student_name: studentName,
+            transaction_type: "return"
+        });
+        db.collection('books').doc(bookId).update({
+            available: true,
+        });
+        db.collection('students').doc(studentId).update({
+            books_issued: firebase.firestore.FieldValue.increment(-1)
+        });
+        this.setState({
+            bookId: '',
+            studentId: '',
+        })
+    }
+    getBook = async(bookId) => {
+        db.collection('books').where("book_id", "==", bookId).get().then((docs) => {
+            docs.docs.map((doc) => {
+                this.setState({
+                    bookName: doc.data().book_name
+                })
+            })
+        })
+    }
+    getStudent = async(studentId) => {
+        db.collection('students').where("student_id", "==", studentId).get().then((docs) => {
+            docs.docs.map((doc) => {
+                this.setState({
+                    studentName: doc.data().student_name
+                })
+            })
+        })
+
     }
 
     handleTransaction = async() => {
-        var {bookId} = this.state;
+        var {bookId, studentId} = this.state;
+        await this.getBook(bookId);
+        await this.getStudent(studentId);
         db.collection('books').doc(bookId).get().then((doc) => {
             if(doc.data().available){
-                this.initiateBookIssue()
+                var {bookName, studentName} = this.state;
+                this.initiateBookIssue(bookName,studentName,bookId,studentId);
+                Alert.alert("Entregue 😁")
             }
             else{
-                this.initiateBookReturn()
+                var {bookName, studentName} = this.state;
+                this.initiateBookReturn(bookName,studentName,bookId,studentId)
+                ToastAndroid.show("Devolvido 😀", ToastAndroid.SHORT)
             }
         })
+    
     }
+
+
+    // precisa se preocupar mais D:
 
     render(){
 
@@ -78,7 +143,7 @@ class Transacao extends React.Component {
 
 
         return (
-            <View style = {styles.container}>
+            <KeyboardAvoidingView style = {styles.container} behavior = "padding">
                 <ImageBackground source = {bg} style = {styles.bgImage}>
                     <View style = {styles.upperContainer}>
                         <Image source = {logo} style = {styles.appIcon} />
@@ -116,7 +181,7 @@ class Transacao extends React.Component {
 
                     </TouchableOpacity>
                 </ImageBackground> 
-            </View>
+            </KeyboardAvoidingView>
         )
     }
 }
