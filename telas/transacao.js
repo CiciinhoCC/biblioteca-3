@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ImageBackground, Image, KeyboardAvoidingView, A
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
-import db from "../config";
+import db from "./config";
 
 
 const bg = require('../assets/background2.png');
@@ -116,21 +116,73 @@ class Transacao extends React.Component {
         var {bookId, studentId} = this.state;
         await this.getBook(bookId);
         await this.getStudent(studentId);
-        db.collection('books').doc(bookId).get().then((doc) => {
-            if(doc.data().available){
-                var {bookName, studentName} = this.state;
-                this.initiateBookIssue(bookName,studentName,bookId,studentId);
-                Alert.alert("Entregue 😁")
+        var tipo = await this.checarLivro(bookId)
+        if(!tipo){Alert.alert("Livro não existe 😱"); this.setState({bookId: '', studentId: '',})}
+        else if(tipo === 'issue'){
+                var aluno = await this.checarEmprestimo(studentId);
+                if(aluno){
+                    var {bookName, studentName} = this.state;
+                    this.initiateBookIssue(bookName,studentName,bookId,studentId);
+                    Alert.alert("Entregue 😁")
+                }
             }
             else{
-                var {bookName, studentName} = this.state;
-                this.initiateBookReturn(bookName,studentName,bookId,studentId)
-                ToastAndroid.show("Devolvido 😀", ToastAndroid.SHORT)
+                var aluno = await this.checarDevolvimento(bookId,studentId);
+                if(aluno){
+                    var {bookName, studentName} = this.state;
+                    this.initiateBookReturn(bookName,studentName,bookId,studentId)
+                    ToastAndroid.show("Devolvido 😀", ToastAndroid.SHORT)
+                }
             }
-        })
-    
     }
 
+    checarDevolvimento = async(bookId,studentId) => {
+        const consulta = await db.collection("transactions").where("book_id", "==", bookId).limit(1).get();
+        var tipo = '';
+        consulta.docs.map((doc) => {
+            if(doc.data().student_id === studentId){
+                tipo = true;
+            }
+            else{
+                tipo = false;
+                Alert.alert('Não foi esse aluno que retirou 😲');
+                this.setState({bookId: '', studentId: '',})
+            }
+        })
+        return tipo;
+    }
+
+    checarEmprestimo = async(studentId) => {
+        const consulta = await db.collection("students").where("student_id", "==", studentId).get();
+        var tipo = ""
+        if(consulta.docs.length == 0){
+            tipo = false;
+        }
+        else{ consulta.docs.map(() => {if(docs.data.books_issued < 2){
+            tipo = true;
+                }
+            else{
+                tipo = false;
+                Alert.alert("Aluno fominha 🚨");
+                this.setState({bookId: '', studentId: '',})
+            }
+        })}
+        return tipo;
+    }
+
+    checarLivro = async(bookId) => {
+        const consulta = await db.collection('books').where('book_id', '==', bookId).get();
+        var tipo = "";
+        if(consulta.docs.length == 0){
+            tipo = false;
+        }
+        else {
+            consulta.docs.map((doc) => {
+                tipo = doc.data().available? 'issue' : 'return'
+            })
+        }
+        return tipo;
+    }
 
     // precisa se preocupar mais D:
 

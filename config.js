@@ -1,6 +1,6 @@
 import firebase from 'firebase';
-
 require('@firebase/firestore');
+
 const firebaseConfig = {
     apiKey: "AIzaSyC9VDBx2KGRutjkKcJl7pEJxDt-pDwbqHc",
     authDomain: "biblioteca-3.firebaseapp.com",
