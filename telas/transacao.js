@@ -3,8 +3,8 @@ import { StyleSheet, Text, View, ImageBackground, Image, KeyboardAvoidingView, A
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
-import db from "./config";
-
+import db from '../config';
+import firebase from '../config';
 
 const bg = require('../assets/background2.png');
 const logo = require('../assets/appIcon.png');
