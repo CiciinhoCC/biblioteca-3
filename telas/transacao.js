@@ -206,22 +206,24 @@ class Transacao extends React.Component {
                             <TextInput style = {styles.textInput}
                             placeHolder = {'ID do livro'}
                             placeHolderTextColor = {'#fff'}
-                            value = {bookId} />
+                            value = {this.state.bookId} />
                             <TouchableOpacity onPress = {() => {
                             this.getCameraPermissions('bookId')
-                            }}>
-                                <Text>Digitalizar</Text>
+                            }}
+                            style = {styles.scanbutton}>
+                                <Text style = {styles.scanbuttonText}>Digitalizar Livro</Text>
                             </TouchableOpacity>
                         </View>
                         <View style = {styles.textInputContainer}>
                             <TextInput style = {styles.textInput}
                             placeHolder = {'ID do aluno'}
                             placeHolderTextColor = {'#fff'}
-                            value = {studentId} />
+                            value = {this.state.studentId} />
                             <TouchableOpacity onPress = {() => {
                             this.getCameraPermissions('studentId')
-                            }}>
-                                <Text>Digitalizar</Text>
+                            }}
+                            style = {styles.scanbutton}>
+                                <Text style = {styles.scanbuttonText}>Digitalizar Aluno</Text>
                             </TouchableOpacity>
                         </View>  
                     </View>
