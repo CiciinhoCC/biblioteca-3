@@ -4,15 +4,9 @@ import Navegador from "./componentes/navegador";
 import Login from "./telas/login";
 import { createSwitchNavigator } from "react-navigation-switch";
 import { createAppContainer } from "react-navigation";
+import { Font } from "@expo-google-fonts/rajdhani";
 
-const Switch = createSwitchNavigator({
-  login: {
-    screen: Login
-  },
-  Navegador : {
-    screen: Navegador
-  }
-});
+const Switch = createSwitchNavigator();
 
 const Container = createAppContainer(Switch);
 
@@ -41,7 +35,12 @@ export default class App extends React.Component {
     const {fontLoaded} = this.state
     if(fontLoaded){
       return (
-        <Container/>
+        <Container>
+        <Switch.Navigator>
+            <Switch.Screen name = "login" component={Login}/>
+            <Switch.Screen name = "Navegador" component={Navegador}/>
+        </Switch.Navigator>
+        </Container>
 
       ); 
     }

@@ -1,14 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, ImageBackground, Image, KeyboardAvoidingView, Alert, ToastAndroid} from 'react-native';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
-import db from '../config';
 import firebase from '../config';
 
 const bg = require('../assets/background2.png');
 const logo = require('../assets/appIcon.png');
 const appName = require("../assets/appName.png");
 
-export default class Login extends Component {
+export default class Login extends React.Component {
     constructor(){
         super();
         this.state = {
